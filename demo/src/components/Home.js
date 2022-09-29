@@ -1,7 +1,9 @@
 import { useContext } from 'react';
 import { MyContext } from '../contexts/MyContext';
+import { TodoContext } from '../contexts/TodoContext';
 export const HomePage = () => {
     const { username, isLogged } = useContext(MyContext);
+    const { tasks } = useContext(TodoContext);
 
     return (
         <>
@@ -15,6 +17,13 @@ export const HomePage = () => {
                 ) : (
                     <div>Bạn chưa đăng nhập</div>
                 )}
+
+                {tasks.map(item => (
+                    <div>
+                        <h2>{item.name}</h2>
+                        <h5>{item.isCompleted ? 'DONE' : 'IN-PROGRESS'}</h5>
+                    </div>
+                ))}
             </div>
         </>
     )

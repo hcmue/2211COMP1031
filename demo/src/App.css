@@ -36,3 +36,11 @@
     transform: rotate(360deg);
   }
 }
+
+.mylink{
+  padding: 10px;
+}
+
+.mylink a, .mylink a:hover{
+  text-decoration: none;
+}
