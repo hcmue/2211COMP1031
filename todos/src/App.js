@@ -1,4 +1,4 @@
-import React, { createContext } from 'react';
+import React from 'react';
 import { Routes, Route, BrowserRouter, Link } from 'react-router-dom';
 import { Counter } from './components/Counter';
 import { About } from './components/About';
