@@ -6,6 +6,7 @@ import { HomePage } from './components/Home';
 import { About } from './components/About';
 import { Todo } from './components/Todo';
 import { DangKy } from './components/DangKy';
+import { DemoApi } from './components/DemoAPI';
 import { MyContextProvider } from './contexts/MyContext';
 import { TodoContextProvider } from './contexts/TodoContext';
 
@@ -33,6 +34,7 @@ function App() {
               <Route exact path='/todos' element={<Todo />} />
               <Route exact path='/login' element={<Login />} />
               <Route exact path='/register' element={<DangKy />} />
+              <Route exact path='/demo' element={<DemoApi />} />
             </Routes>
           </TodoContextProvider>
         </BrowserRouter>
