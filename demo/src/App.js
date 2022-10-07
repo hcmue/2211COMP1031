@@ -5,6 +5,7 @@ import { Login } from './components/Login';
 import { HomePage } from './components/Home';
 import { About } from './components/About';
 import { Todo } from './components/Todo';
+import { DangKy } from './components/DangKy';
 import { MyContextProvider } from './contexts/MyContext';
 import { TodoContextProvider } from './contexts/TodoContext';
 
@@ -18,6 +19,7 @@ function App() {
             <Link to='/about' className='mylink'>About</Link>
             <Link to='/todos' className='mylink'>TODOs</Link>
             <Link to='/login' className='mylink'>Login</Link>
+            <Link to='/register' className='mylink'>Register</Link>
           </nav>
 
           <header className="App-header">
@@ -30,6 +32,7 @@ function App() {
               <Route exact path='/home' element={<HomePage />} />
               <Route exact path='/todos' element={<Todo />} />
               <Route exact path='/login' element={<Login />} />
+              <Route exact path='/register' element={<DangKy />} />
             </Routes>
           </TodoContextProvider>
         </BrowserRouter>
