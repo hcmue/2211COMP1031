@@ -15,3 +15,7 @@ Step 2: Tạo file chính (main.py)
 
 Step 3: Chạy
 uvicorn main:app --reload
+
+## Bài tập
+
+Viết API thêm/xóa/sửa/lấy sinh viên
