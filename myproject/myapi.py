@@ -1,3 +1,4 @@
+import json
 from pydantic import BaseModel
 from fastapi import FastAPI
 
@@ -26,12 +27,27 @@ class Student(BaseModel):
 
 @app.get("/students")
 def get_students():
-    pass
+    try:
+        with open("students.json", encoding="utf8") as f:
+            data = json.load(f)
+            return data
+    except Exception as e:
+        print(e)
+        return None
 
 
 @app.get("/students/{id}")
 def get_student(id: str):
-    pass
+    try:
+        with open("students.json", encoding="utf8") as f:
+            data = json.load(f)
+            for item in data:
+                if item["id"] == id:
+                    return item
+            return None
+    except Exception as e:
+        print(e)
+        return None
 
 
 @app.post("/students")
@@ -46,7 +62,18 @@ def update_student(id: str, model: Student):
 
 @app.delete("/students/{id}")
 def remove_student(id: str):
-    pass
+    try:
+        with open("students.json", encoding="utf8") as f:
+            data = json.load(f)
+            for item in data:
+                if item["id"] == id:
+                    data.remove(item)
+                    print(data)
+                    # Save
+            return None
+    except Exception as e:
+        print(e)
+        return None
 
 
 @app.get("/")
