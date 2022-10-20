@@ -9,7 +9,7 @@
   ```
   $pip freeze > requirements.txt
   ```
-- Dựng lại environ của project:
+- Dựng lại environment của project:
   - Tạo virtual environment
   - Chạy lệnh cài các packages trong file requirements.txt
   ```
