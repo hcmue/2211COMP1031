@@ -1,3 +1,4 @@
+from pydantic import BaseModel
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 
@@ -25,6 +26,11 @@ todos = [
 ]
 
 
+class TodoItem(BaseModel):
+    id: str
+    item: str
+
+
 @app.get("/todos", tags=["todos"])
 async def get_todos() -> dict:
     return {"data": todos}
@@ -39,11 +45,43 @@ async def get_todo(id):
 
 
 @app.post("/todos", tags=["todos"])
-async def add_todo(todo: dict) -> dict:
+async def add_todo(todo: TodoItem) -> dict:
     todos.append(todo)
     return {
         "data": {"Todo added."}
     }
+
+
+@app.put("/todos/{id}", tags=["todos"])
+async def update_todo(id: int, body: TodoItem) -> dict:
+    print(body, body.item, body.id)
+    for todo in todos:
+        print(todo)
+        print(todo["id"], id)
+        if int(todo["id"]) == id:
+            todo["item"] = body.item
+            return {
+                "data": f"Todo with id {id} has been updated."
+            }
+
+    return {
+        "data": f"Todo with id {id} not found."
+    }
+
+
+@app.delete("/todos/{id}", tags=["todos"])
+async def delete_todo(id: int) -> dict:
+    for todo in todos:
+        if int(todo["id"]) == id:
+            todos.remove(todo)
+            return {
+                "data": f"Todo with id {id} has been removed."
+            }
+
+    raise HTTPException(
+        status_code=404,
+        detail=f"Todo with id {id} not found."
+    )
 
 
 @app.get("/")
