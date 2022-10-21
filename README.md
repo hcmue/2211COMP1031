@@ -15,6 +15,8 @@
   $ pip install -r requirements.txt
   ```
 
+## Tham khảo: https://testdriven.io/blog/fastapi-react/
+
 ## Cấu trúc thư mục frontend
 
 ```
