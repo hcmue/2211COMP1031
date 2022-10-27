@@ -1,5 +1,7 @@
 # FastAPI
 
+### Tham khảo: https://testdriven.io/blog/fastapi-react/
+
 ## Tạo virtual environment
 
 - Tạo: `$python -m venv venv`
