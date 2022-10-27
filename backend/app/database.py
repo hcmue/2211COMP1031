@@ -9,12 +9,10 @@ from typer import echo
 # PyMySQL
 SQLALCHEMY_DATABASE_URL = "mysql+pymysql://root:@localhost/46comp1031"
 
-
 engine = create_engine(
     SQLALCHEMY_DATABASE_URL,
     encoding="utf-8",
     echo=True,
-    connect_args={"check_same_thread": False}
 )
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
