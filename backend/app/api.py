@@ -1,9 +1,23 @@
 from pydantic import BaseModel
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
+from .database import Base, SessionLocal, engine
+
+Base.metadata.create_all(bind=engine)
 
 
 app = FastAPI()
+
+# Dependency
+
+
+def get_db():
+    db = SessionLocal()
+    try:
+        yield db
+    finally:
+        db.close()
+
 
 # Cấu hình CORS cho phép tất cả các nguồn đều truy cập được API
 app.add_middleware(
