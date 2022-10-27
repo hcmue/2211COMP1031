@@ -1,5 +1,7 @@
 # FastAPI
 
+### Tham khảo: https://testdriven.io/blog/fastapi-react/
+
 ## Tạo virtual environment
 
 - Tạo: `$python -m venv venv`
@@ -15,3 +17,11 @@
   ```
   $ pip install -r requirements.txt
   ```
+
+# SQLAlchemy
+
+## Cài thư viện
+
+```
+pip install sqlalchemy
+```
