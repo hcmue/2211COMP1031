@@ -1,3 +1,6 @@
+import re
+from .DbUtil import DbUtil
+import pymysql
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
@@ -84,3 +87,38 @@ async def delete_todo(id: int) -> dict:
 @app.get("/")
 def root():
     return {"message": "hello"}
+
+
+@app.get("/loai")
+def get_all_loai():
+    try:
+        # Connect to the database
+        connection = pymysql.connect(host='localhost', user='root', password='',
+                                     database='cnwebcomp103102', cursorclass=pymysql.cursors.DictCursor)
+        # Get data
+        with connection.cursor() as cursor:
+            cursor.execute("SELECT * FROM loai")
+            result = cursor.fetchall()
+            ds_loai = []
+            for loai in result:
+                print(loai)
+                ds_loai.append(loai)
+            return ds_loai
+    except:
+        raise HTTPException(status_code=403, detail="Error")
+
+
+class LoaiModel(BaseModel):
+    tenloai: str
+
+
+@app.post("/loai")
+def create_new_loai(model: LoaiModel):
+    sqlinsert = f'''
+    INSERT INTO loai(tenloai) VALUES('{model.tenloai}')
+    '''
+    result = DbUtil.insert_and_get_id(sqlinsert)
+    if result:
+        return {"inserted_id": result}
+    else:
+        return {"message": "Can not create"}
