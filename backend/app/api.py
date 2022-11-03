@@ -1,8 +1,10 @@
+import email
 from pydantic import BaseModel
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from .db.database import Base, SessionLocal, engine
 from .db.models import User
+from .models.schema import UserCreate
 
 Base.metadata.create_all(bind=engine)
 
@@ -47,7 +49,7 @@ todos = [
 def get_all_user():
     session = SessionLocal()
     users = session.query(User).all()
-    return users
+    return users  # Nen tra ve ViewModel
 
 
 @app.get("/users/{id}")
@@ -55,9 +57,21 @@ def get_user_by_id(id: int):
     session = SessionLocal()
     user = session.query(User).filter(User.id == id).one_or_none()
     if user:
-        return user
+        return user  # Nen tra ve ViewModel
     else:
         raise HTTPException(status_code=404, detail="Not found")
+
+
+@app.post("/users")
+def create_new_user(model: UserCreate):
+    new_user = User(username=model.username,
+                    email=model.email, hashed_password=model.password)
+    session = SessionLocal()
+    session.add(new_user)
+    session.commit()
+    session.refresh(new_user)
+
+    return new_user  # Nen tra ve ViewModel
 ##############################
 
 
