@@ -26,3 +26,6 @@
 pip install sqlalchemy
 pip install pymysql
 ```
+
+- Tham khảo sqlalchemy + pymysql
+  https://hackersandslackers.com/python-database-management-sqlalchemy/
