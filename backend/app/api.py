@@ -48,6 +48,16 @@ def get_all_user():
     session = SessionLocal()
     users = session.query(User).all()
     return users
+
+
+@app.get("/users/{id}")
+def get_user_by_id(id: int):
+    session = SessionLocal()
+    user = session.query(User).filter(User.id == id).one_or_none()
+    if user:
+        return user
+    else:
+        raise HTTPException(status_code=404, detail="Not found")
 ##############################
 
 
