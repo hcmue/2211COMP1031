@@ -1,7 +1,8 @@
 from pydantic import BaseModel
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
-from .database import Base, SessionLocal, engine
+from .db.database import Base, SessionLocal, engine
+from .db.models import User
 
 Base.metadata.create_all(bind=engine)
 
@@ -38,6 +39,16 @@ todos = [
         "item": "Cycle around town."
     }
 ]
+
+##############################
+
+
+@app.get("/users")
+def get_all_user():
+    session = SessionLocal()
+    users = session.query(User).all()
+    return users
+##############################
 
 
 class TodoItem(BaseModel):
