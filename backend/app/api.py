@@ -1,6 +1,4 @@
-import re
-
-from requests import session
+from .models.models import UserRegister
 from .DbUtil import DbUtil
 import pymysql
 from fastapi import FastAPI, HTTPException
@@ -33,14 +31,32 @@ def get_all_users():
 @app.get("/users/{id}")
 def get_user(id: int):
     session = SessionLocal()
-    user = session.query(User)\
-        .filter(User.id == id).one_or_none()
+    user = session.query(User).filter(User.id == id).one_or_none()
     if user:
         return user  # Convert ViewModel
     else:
         raise HTTPException(
             status_code=404, detail="Not found"
         )
+
+
+@app.post("/users")
+def register(model: UserRegister):
+    new_user = User(fullname=model.fullname,
+                    password=model.password, username=model.username)
+    session = SessionLocal()
+    session.add(new_user)
+    session.commit()
+    session.refresh(new_user)
+
+    return new_user
+
+
+@app.delete("/users/{id}")
+def remove_user(id: int):
+    session = SessionLocal()
+    session.query(User).filter(User.id == id).delete()
+    session.commit()
 
 
 todos = [
