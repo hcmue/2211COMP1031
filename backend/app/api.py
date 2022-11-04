@@ -1,10 +1,15 @@
 import re
+
+from requests import session
 from .DbUtil import DbUtil
 import pymysql
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
-from .db import database
+from .db.database import Base, SessionLocal, engine
+from .db.schema import User
+
+Base.metadata.create_all(bind=engine)
 
 
 app = FastAPI()
@@ -16,6 +21,27 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"]
 )
+
+
+@app.get("/users")
+def get_all_users():
+    session = SessionLocal()
+    users = session.query(User).all()
+    return users  # Convert ViewModel
+
+
+@app.get("/users/{id}")
+def get_user(id: int):
+    session = SessionLocal()
+    user = session.query(User)\
+        .filter(User.id == id).one_or_none()
+    if user:
+        return user  # Convert ViewModel
+    else:
+        raise HTTPException(
+            status_code=404, detail="Not found"
+        )
+
 
 todos = [
     {
