@@ -1,12 +1,14 @@
+from datetime import datetime, timedelta
 from pydantic import BaseModel
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, Depends, status
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 from jose import JWTError, jwt
+from typing import Union
 from passlib.context import CryptContext
 from .db.database import Base, SessionLocal, engine
 from .db.models import User
-from .models.schema import UserCreate
+from .models.schema import UserCreate, UserLogin
 
 Base.metadata.create_all(bind=engine)
 
@@ -18,7 +20,7 @@ ACCESS_TOKEN_EXPIRE_MINUTES = 30
 
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
-oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl="login")
 
 
 app = FastAPI()
@@ -96,6 +98,40 @@ def create_new_user(model: UserCreate):
     session.refresh(new_user)
 
     return new_user  # Nen tra ve ViewModel
+
+
+def create_access_token(data: dict, expires_delta: Union[timedelta, None] = None):
+    to_encode = data.copy()
+    if expires_delta:
+        expire = datetime.utcnow() + expires_delta
+    else:
+        expire = datetime.utcnow() + timedelta(minutes=15)
+    to_encode.update({"exp": expire})
+    encoded_jwt = jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
+    return encoded_jwt
+
+
+@app.post("/login")
+def authenticate(model: UserLogin):
+    # Check user có hay ko?
+    session = SessionLocal()
+    user = session.query(User)\
+        .filter(User.username == model.username).one_or_none()
+    if user and verify_password(model.password, user.hashed_password):
+        # Sinh token
+        access_token_expires = timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
+        access_token = create_access_token(
+            data={
+                "sub": user.username,
+                "email": user.email,
+                "roles": ["Admin"]
+            },
+            expires_delta=access_token_expires
+        )
+        return {"access_token": access_token, "token_type": "bearer"}
+    else:
+        raise HTTPException(status_code=401, detail="Unauthorize")
+
 ##############################
 
 
@@ -117,12 +153,30 @@ async def get_todo(id):
     raise HTTPException(status_code=404, detail=f"not found {id}")
 
 
+async def verify_token(token: str = Depends(oauth2_scheme)):
+    credentials_exception = HTTPException(
+        status_code=status.HTTP_401_UNAUTHORIZED,
+        detail="Could not validate credentials",
+        headers={"WWW-Authenticate": "Bearer"},
+    )
+    try:
+        payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
+        username: str = payload.get("sub")
+        if username is None:
+            raise credentials_exception
+
+        return {"username": username}  # Tu lay thong tin user tu db
+    except JWTError:
+        raise credentials_exception
+
+
 @app.post("/todos", tags=["todos"])
-async def add_todo(todo: TodoItem) -> dict:
-    todos.append(todo)
-    return {
-        "data": {"Todo added."}
-    }
+async def add_todo(todo: TodoItem, current_user: User = Depends(verify_token)) -> dict:
+    if current_user:
+        todos.append(todo)
+        return {
+            "data": {"Todo added."}
+        }
 
 
 @app.put("/todos/{id}", tags=["todos"])
