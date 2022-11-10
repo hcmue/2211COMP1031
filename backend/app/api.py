@@ -1,15 +1,36 @@
-import email
 from pydantic import BaseModel
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
+from jose import JWTError, jwt
+from passlib.context import CryptContext
 from .db.database import Base, SessionLocal, engine
 from .db.models import User
 from .models.schema import UserCreate
 
 Base.metadata.create_all(bind=engine)
 
+# to get a string like this run:
+# openssl rand -hex 32
+SECRET_KEY = "e1e185fd071396f663de65a965384dadec37df0acb3b234ce0b047bd7f85d600"
+ALGORITHM = "HS256"
+ACCESS_TOKEN_EXPIRE_MINUTES = 30
+
+pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
+
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
+
 
 app = FastAPI()
+
+
+def verify_password(plain_password, hashed_password):
+    return pwd_context.verify(plain_password, hashed_password)
+
+
+def get_password_hash(password_clear_text):
+    return pwd_context.hash(password_clear_text)
+
 
 # Dependency
 
@@ -64,8 +85,11 @@ def get_user_by_id(id: int):
 
 @app.post("/users")
 def create_new_user(model: UserCreate):
-    new_user = User(username=model.username,
-                    email=model.email, hashed_password=model.password)
+    new_user = User(
+        username=model.username,
+        email=model.email,
+        hashed_password=get_password_hash(model.password)
+    )
     session = SessionLocal()
     session.add(new_user)
     session.commit()

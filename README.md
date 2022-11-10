@@ -29,3 +29,11 @@ pip install pymysql
 
 - Tham khảo sqlalchemy + pymysql
   https://hackersandslackers.com/python-database-management-sqlalchemy/
+
+## JWT
+
+- Cài thư viện mã hóa và xác thực JWT
+  ```
+    pip install "python-jose[cryptography]"
+    pip install "passlib[bcrypt]"
+  ```
