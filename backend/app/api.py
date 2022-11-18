@@ -24,7 +24,18 @@ app.add_middleware(
 
 @app.post("/login")
 async def login(model: LoginVM):
-    pass
+    session = SessionLocal()
+    # 1. Check valid user/pass
+    user = session.query(User)\
+        .filter(User.username == model.username)\
+        .one_or_none()
+    if user and user.password == model.password:
+        # 2. Generate token
+        return user  # Convert ViewModel
+    else:
+        raise HTTPException(
+            status_code=401, detail="Unauthorize"
+        )
 
 
 @app.get("/users")
