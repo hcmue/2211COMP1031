@@ -31,3 +31,15 @@ backend
 ## Authentication using password and Bearer Token
 
 https://fastapi.tiangolo.com/tutorial/security/oauth2-jwt
+
+Install `python-jose` to generate and verify the JWT tokens
+
+```
+pip install "python-jose[cryptography]"
+```
+
+Install `passlib` to encrypt and decrypt.
+
+```
+pip install "passlib[bcrypt]"
+```
