@@ -1,14 +1,27 @@
 import pymysql
-from fastapi import FastAPI, HTTPException, Depends
+from datetime import datetime, timedelta
+from typing import Union
+from fastapi import FastAPI, HTTPException, Depends, status
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
+from passlib.context import CryptContext
+from jose import JWTError, jwt
 from .models.models import UserRegister, LoginVM
 from .DbUtil import DbUtil
 from .db.database import Base, SessionLocal, engine
 from .db.schema import User
 
 Base.metadata.create_all(bind=engine)
+
+# to get a string like this run:
+# openssl rand -hex 32
+SECRET_KEY = "339114409fd918b6cc86c09afafc467953c17b468b3800648edb2990fbc518c1"
+ALGORITHM = "HS256"
+ACCESS_TOKEN_EXPIRE_MINUTES = 30
+
+pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl="login")
 
 
 app = FastAPI()
@@ -22,6 +35,25 @@ app.add_middleware(
 )
 
 
+def verify_password(plain_password, hashed_password):
+    return pwd_context.verify(plain_password, hashed_password)
+
+
+def get_password_hash(password):
+    return pwd_context.hash(password)
+
+
+def create_access_token(data: dict, expires_delta: Union[timedelta, None] = None):
+    to_encode = data.copy()
+    if expires_delta:
+        expire = datetime.utcnow() + expires_delta
+    else:
+        expire = datetime.utcnow() + timedelta(minutes=15)
+    to_encode.update({"exp": expire})
+    encoded_jwt = jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
+    return encoded_jwt
+
+
 @app.post("/login")
 async def login(model: LoginVM):
     session = SessionLocal()
@@ -29,12 +61,22 @@ async def login(model: LoginVM):
     user = session.query(User)\
         .filter(User.username == model.username)\
         .one_or_none()
-    if user and user.password == model.password:
+    if user and verify_password(model.password, user.password):
         # 2. Generate token
-        return user  # Convert ViewModel
+        access_token_expires = timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
+        access_token = create_access_token(
+            data={
+                "sub": user.username,
+                "name": user.fullname
+            },
+            expires_delta=access_token_expires
+        )
+        return {"access_token": access_token, "token_type": "bearer"}
     else:
         raise HTTPException(
-            status_code=401, detail="Unauthorize"
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Incorrect username or password",
+            headers={"WWW-Authenticate": "Bearer"},
         )
 
 
@@ -58,9 +100,12 @@ def get_user(id: int):
 
 
 @app.post("/users")
-def register(model: UserRegister):
-    new_user = User(fullname=model.fullname,
-                    password=model.password, username=model.username)
+def register(model: UserRegister, token: str = Depends(oauth2_scheme)):
+    new_user = User(
+        fullname=model.fullname,
+        password=get_password_hash(model.password),
+        username=model.username
+    )
     session = SessionLocal()
     session.add(new_user)
     session.commit()
