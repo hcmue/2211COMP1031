@@ -1,9 +1,10 @@
-from .models.models import UserRegister
-from .DbUtil import DbUtil
 import pymysql
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, Depends
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
+from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
+from .models.models import UserRegister, LoginVM
+from .DbUtil import DbUtil
 from .db.database import Base, SessionLocal, engine
 from .db.schema import User
 
@@ -19,6 +20,11 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"]
 )
+
+
+@app.post("/login")
+async def login(model: LoginVM):
+    pass
 
 
 @app.get("/users")

@@ -27,3 +27,7 @@ backend
      |__ __init__.py <-- đánh dấu TM app là module
      |__ myapi.py (trong đó có chứa biến app = FastAPI()
 ```
+
+## Authentication using password and Bearer Token
+
+https://fastapi.tiangolo.com/tutorial/security/simple-oauth2
